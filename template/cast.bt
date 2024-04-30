@@ -1,0 +1,65 @@
+//--------------------------------------
+//--- 010 Editor v6.0.1 Binary Template
+//
+// File:
+// Author:
+// Revision:
+// Purpose:
+//--------------------------------------
+
+LittleEndian();
+
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned int64 uint64_t;
+typedef char int8_t;
+
+const short PROPERTY_ID_BYTE = 0x62;      // b
+const short PROPERTY_ID_SHORT = 0x68;     // h
+const short PROPERTY_ID_INTEGER32 = 0x69; // i
+const short PROPERTY_ID_INTEGER64 = 0x6C; // l
+const short PROPERTY_ID_FLOAT = 0x66;     // f
+const short PROPERTY_ID_DOUBLE = 0x64;    // d
+const short PROPERTY_ID_STRING = 0x73;    // s
+
+
+typedef struct {
+    SetBackColor(cLtGray);
+    uint32_t Magic;
+    uint32_t Version;
+    uint32_t RootNodes;
+    uint32_t Flags;
+} CastHeader;
+
+typedef struct {
+    SetBackColor(cLtBlue);
+    uint32_t Identifier;
+    uint32_t NodeSize;
+    uint64_t NodeHash;
+    uint32_t PropertyCount;
+    uint32_t ChildCount;
+} CastNodeHeader;
+
+typedef struct {
+    uint16_t Identifier;
+    uint16_t NameSize;
+    uint32_t ArrayLength;
+} CastPropertyHeader;
+
+typedef struct {
+    CastPropertyHeader header;
+    int8_t name[header.NameSize] <optimize=false>;
+    
+} CastProperty ;
+
+typedef struct {
+    CastNodeHeader header;
+    CastProperty properties [header.PropertyCount] <optimize=false>;
+} CastNode;
+
+typedef struct {
+    CastHeader header;
+    CastNode nodes[header.RootNodes] <optimize=false>;
+} Cast;
+
+Cast c;
