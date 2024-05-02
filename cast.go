@@ -626,11 +626,9 @@ func (n *CastNodeSkeleton) CreateBone() *CastNodeBone {
 func (n *CastNodeSkeleton) IKHandles() []*CastNodeIKHandle {
 	iks := n.ChildrenOfType(CastIdIKHandle)
 	ikHandles := make([]*CastNodeIKHandle, len(iks))
-
 	for i := range ikHandles {
 		ikHandles[i] = (iks[i]).(*CastNodeIKHandle)
 	}
-
 	return ikHandles
 }
 
@@ -641,11 +639,9 @@ func (n *CastNodeSkeleton) CreateIKHandle() *CastNodeIKHandle {
 func (n *CastNodeSkeleton) Constraints() []*CastNodeConstraint {
 	cs := n.ChildrenOfType(CastIdConstraint)
 	constraints := make([]*CastNodeConstraint, len(cs))
-
 	for i := range constraints {
 		constraints[i] = (cs[i]).(*CastNodeConstraint)
 	}
-
 	return constraints
 }
 
@@ -1183,6 +1179,92 @@ func NewCastNodeAnimation() *CastNodeAnimation {
 	return NewCastNode[CastNodeAnimation]()
 }
 
+func (n *CastNodeAnimation) Name() string {
+	property, ok := n.GetProperty(CastPropertyNameName)
+	if !ok {
+		return ""
+	}
+
+	return property.Name()
+}
+
+func (n *CastNodeAnimation) SetName(name string) {
+	createProperty(&n.CastNode, CastPropertyNameName, CastPropertyString, name)
+}
+
+func (n *CastNodeAnimation) Skeleton() *CastNodeSkeleton {
+	skeletons := n.ChildrenOfType(CastIdSkeleton)
+	if len(skeletons) == 0 {
+		return nil
+	}
+
+	skeleton, ok := (skeletons[0]).(*CastNodeSkeleton)
+	if !ok {
+		return nil
+	}
+
+	return skeleton
+}
+
+func (n *CastNodeAnimation) CreateSkeleton() *CastNodeSkeleton {
+	return (n.CreateChild(NewCastNodeSkeleton())).(*CastNodeSkeleton)
+}
+
+func (n *CastNodeAnimation) Curves() []*CastNodeCurve {
+	cs := n.ChildrenOfType(CastIdCurve)
+	curves := make([]*CastNodeCurve, len(cs))
+	for i := range curves {
+		curves[i] = (cs[i]).(*CastNodeCurve)
+	}
+	return curves
+}
+
+func (n *CastNodeAnimation) CreateCurve() *CastNodeCurve {
+	return (n.CreateChild(NewCastNodeCurve())).(*CastNodeCurve)
+}
+
+func (n *CastNodeAnimation) Notifications() []*CastNodeNotificationTrack {
+	ns := n.ChildrenOfType(CastIdNotificationTrack)
+	notificationTracks := make([]*CastNodeNotificationTrack, len(ns))
+	for i := range notificationTracks {
+		notificationTracks[i] = (ns[i]).(*CastNodeNotificationTrack)
+	}
+	return notificationTracks
+}
+
+func (n *CastNodeAnimation) CreateNotification() *CastNodeNotificationTrack {
+	return (n.CreateChild(NewCastNodeNotificationTrack())).(*CastNodeNotificationTrack)
+}
+
+func (n *CastNodeAnimation) Framerate() float32 {
+	values := getPropertyValues[float32](&n.CastNode, CastPropertyNameFramerate)
+	if len(values) == 0 {
+		return 0
+	}
+	return values[0]
+}
+
+func (n *CastNodeAnimation) SetFramerate(framerate float32) {
+	createProperty(&n.CastNode, CastPropertyNameFramerate, CastPropertyFloat, framerate)
+}
+
+func (n *CastNodeAnimation) Looping() bool {
+	values := getPropertyValues[byte](&n.CastNode, CastPropertyNameLoop)
+	if len(values) == 0 {
+		return false
+	}
+
+	return values[0] >= 1
+}
+
+func (n *CastNodeAnimation) SetLooping(enabled bool) {
+	value := byte(0)
+	if enabled {
+		value = byte(1)
+	}
+	createProperty(&n.CastNode, CastPropertyNameLoop, CastPropertyByte, value)
+}
+
 type CastNodeCurve struct{ CastNode }
 
 func NewCastNodeCurve() *CastNodeCurve {
@@ -1253,6 +1335,8 @@ const (
 	CastPropertyNameSkipZ                  = "sz"
 	CastPropertyNameType                   = "t"
 	CastPropertyNamePath                   = "p"
+	CastPropertyNameFramerate              = "fr"
+	CastPropertyNameLoop                   = "lo"
 )
 
 type CastPropertyHeader struct {
