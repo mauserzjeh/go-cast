@@ -1128,7 +1128,7 @@ func (n *CastNodeMaterial) SetType(materialType string) {
 func (n *CastNodeMaterial) Slots() map[string]*CastNodeFile {
 	slots := make(map[string]*CastNodeFile, 0)
 	for slot, property := range n.Properties {
-		if slot != "n" && slot != "t" {
+		if slot != CastPropertyNameName && slot != CastPropertyNameType {
 			p, ok := property.(*CastProperty[uint64])
 			if !ok {
 				continue
@@ -1163,6 +1163,18 @@ type CastNodeFile struct{ CastNode }
 
 func NewCastNodeFile() *CastNodeFile {
 	return NewCastNode[CastNodeFile]()
+}
+
+func (n *CastNodeFile) Path() string {
+	values := getPropertyValues[string](&n.CastNode, CastPropertyNamePath)
+	if len(values) == 0 {
+		return ""
+	}
+	return values[0]
+}
+
+func (n *CastNodeFile) SetPath(path string) {
+	createProperty(&n.CastNode, CastPropertyNamePath, CastPropertyString, path)
 }
 
 type CastNodeAnimation struct{ CastNode }
@@ -1240,6 +1252,7 @@ const (
 	CastPropertyNameSkipY                  = "sy"
 	CastPropertyNameSkipZ                  = "sz"
 	CastPropertyNameType                   = "t"
+	CastPropertyNamePath                   = "p"
 )
 
 type CastPropertyHeader struct {
