@@ -2,6 +2,7 @@ package cast
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -12,7 +13,13 @@ func TestCastFile(t *testing.T) {
 		"cast_ik.cast",
 		"pilot_medium_bangalore_LOD0.cast",
 	} {
-		cast, err := Load(fmt.Sprintf("testdata/%v", f))
+		r, err := os.Open(fmt.Sprintf("testdata/%v", f))
+		if err != nil {
+			t.Fatalf("%v", err)
+		}
+		defer r.Close()
+
+		cast, err := Load(r)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
