@@ -1099,6 +1099,66 @@ func NewCastNodeMaterial() *CastNodeMaterial {
 	return NewCastNode[CastNodeMaterial]()
 }
 
+func (n *CastNodeMaterial) Name() string {
+	property, ok := n.GetProperty(CastPropertyNameName)
+	if !ok {
+		return ""
+	}
+
+	return property.Name()
+}
+
+func (n *CastNodeMaterial) SetName(name string) {
+	createProperty(&n.CastNode, CastPropertyNameName, CastPropertyString, name)
+}
+
+func (n *CastNodeMaterial) Type() string {
+	values := getPropertyValues[string](&n.CastNode, CastPropertyNameType)
+	if len(values) == 0 {
+		return ""
+	}
+
+	return values[0]
+}
+
+func (n *CastNodeMaterial) SetType(materialType string) {
+	createProperty(&n.CastNode, CastPropertyNameType, CastPropertyString, materialType)
+}
+
+func (n *CastNodeMaterial) Slots() map[string]*CastNodeFile {
+	slots := make(map[string]*CastNodeFile, 0)
+	for slot, property := range n.Properties {
+		if slot != "n" && slot != "t" {
+			p, ok := property.(*CastProperty[uint64])
+			if !ok {
+				continue
+			}
+
+			if len(p.values) == 0 {
+				continue
+			}
+
+			nodeFile := n.ChildByHash(p.values[0])
+			if nodeFile == nil {
+				continue
+			}
+
+			nf, ok := nodeFile.(*CastNodeFile)
+			if !ok {
+				continue
+			}
+
+			slots[slot] = nf
+		}
+	}
+
+	return slots
+}
+
+func (n *CastNodeMaterial) CreateFile() *CastNodeFile {
+	return (n.CreateChild(NewCastNodeFile())).(*CastNodeFile)
+}
+
 type CastNodeFile struct{ CastNode }
 
 func NewCastNodeFile() *CastNodeFile {
@@ -1179,6 +1239,7 @@ const (
 	CastPropertyNameSkipX                  = "sx"
 	CastPropertyNameSkipY                  = "sy"
 	CastPropertyNameSkipZ                  = "sz"
+	CastPropertyNameType                   = "t"
 )
 
 type CastPropertyHeader struct {
