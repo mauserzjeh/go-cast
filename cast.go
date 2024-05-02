@@ -90,6 +90,7 @@ type ICastNode interface {
 	SetParentNode(node ICastNode)
 	Lenght() int
 	Write(w io.Writer) error
+	ChildByHash(hash uint64) ICastNode
 }
 
 type CastNode struct {
@@ -773,6 +774,171 @@ func NewCastNodeIKHandle() *CastNodeIKHandle {
 	return NewCastNode[CastNodeIKHandle]()
 }
 
+func (n *CastNodeIKHandle) Name() string {
+	property, ok := n.GetProperty(CastPropertyNameName)
+	if !ok {
+		return ""
+	}
+
+	return property.Name()
+}
+
+func (n *CastNodeIKHandle) SetName(name string) {
+	createProperty(&n.CastNode, CastPropertyNameName, CastPropertyString, name)
+}
+
+func (n *CastNodeIKHandle) StartBone() *CastNodeBone {
+	values := getPropertyValues[uint64](&n.CastNode, CastPropertyNameStartBone)
+	if len(values) == 0 {
+		return nil
+	}
+
+	if n.ParentNode == nil {
+		return nil
+	}
+
+	sb := n.ParentNode.ChildByHash(values[0])
+	if sb == nil {
+		return nil
+	}
+
+	startBone, ok := sb.(*CastNodeBone)
+	if !ok {
+		return nil
+	}
+
+	return startBone
+}
+
+func (n *CastNodeIKHandle) SetStartBone(hash uint64) {
+	createProperty(&n.CastNode, CastPropertyNameStartBone, CastPropertyInteger64, hash)
+}
+
+func (n *CastNodeIKHandle) EndBone() *CastNodeBone {
+	values := getPropertyValues[uint64](&n.CastNode, CastPropertyNameEndBone)
+	if len(values) == 0 {
+		return nil
+	}
+
+	if n.ParentNode == nil {
+		return nil
+	}
+
+	eb := n.ParentNode.ChildByHash(values[0])
+	if eb == nil {
+		return nil
+	}
+
+	endBone, ok := eb.(*CastNodeBone)
+	if !ok {
+		return nil
+	}
+
+	return endBone
+}
+
+func (n *CastNodeIKHandle) SetEndBone(hash uint64) {
+	createProperty(&n.CastNode, CastPropertyNameEndBone, CastPropertyInteger64, hash)
+}
+
+func (n *CastNodeIKHandle) TargetBone() *CastNodeBone {
+	values := getPropertyValues[uint64](&n.CastNode, CastPropertyNameTargetBone)
+	if len(values) == 0 {
+		return nil
+	}
+
+	if n.ParentNode == nil {
+		return nil
+	}
+
+	tb := n.ParentNode.ChildByHash(values[0])
+	if tb == nil {
+		return nil
+	}
+
+	targetBone, ok := tb.(*CastNodeBone)
+	if !ok {
+		return nil
+	}
+
+	return targetBone
+}
+
+func (n *CastNodeIKHandle) SetTargetBone(hash uint64) {
+	createProperty(&n.CastNode, CastPropertyNameTargetBone, CastPropertyInteger64, hash)
+}
+
+func (n *CastNodeIKHandle) PoleVectorBone() *CastNodeBone {
+	values := getPropertyValues[uint64](&n.CastNode, CastPropertyNamePoleVectorBone)
+	if len(values) == 0 {
+		return nil
+	}
+
+	if n.ParentNode == nil {
+		return nil
+	}
+
+	pv := n.ParentNode.ChildByHash(values[0])
+	if pv == nil {
+		return nil
+	}
+
+	poleVectorPone, ok := pv.(*CastNodeBone)
+	if !ok {
+		return nil
+	}
+
+	return poleVectorPone
+}
+
+func (n *CastNodeIKHandle) SetPoleVectorBone(hash uint64) {
+	createProperty(&n.CastNode, CastPropertyNamePoleVectorBone, CastPropertyInteger64, hash)
+}
+
+func (n *CastNodeIKHandle) PoleBone() *CastNodeBone {
+	values := getPropertyValues[uint64](&n.CastNode, CastPropertyNamePoleBone)
+	if len(values) == 0 {
+		return nil
+	}
+
+	if n.ParentNode == nil {
+		return nil
+	}
+
+	pb := n.ParentNode.ChildByHash(values[0])
+	if pb == nil {
+		return nil
+	}
+
+	polePone, ok := pb.(*CastNodeBone)
+	if !ok {
+		return nil
+	}
+
+	return polePone
+}
+
+func (n *CastNodeIKHandle) SetPoleBone(hash uint64) {
+	createProperty(&n.CastNode, CastPropertyNamePoleBone, CastPropertyInteger64, hash)
+}
+
+func (n *CastNodeIKHandle) UseTargetRotation() bool {
+	values := getPropertyValues[byte](&n.CastNode, CastPropertyNameTargetRotation)
+	if len(values) == 0 {
+		return false
+	}
+
+	return values[0] >= 1
+}
+
+func (n *CastNodeIKHandle) SetUseTargetRotation(enabled bool) {
+	value := byte(0)
+	if enabled {
+		value = byte(1)
+	}
+	createProperty(&n.CastNode, CastPropertyNameTargetRotation, CastPropertyByte, value)
+}
+
 type CastNodeConstraint struct{ CastNode }
 
 func NewCastNodeConstraint() *CastNodeConstraint {
@@ -853,6 +1019,12 @@ const (
 	CastPropertyNameWorldPosition          = "wp"
 	CastPropertyNameWorldRotation          = "wr"
 	CastPropertyNameScale                  = "s"
+	CastPropertyNameStartBone              = "sb"
+	CastPropertyNameEndBone                = "eb"
+	CastPropertyNameTargetBone             = "tb"
+	CastPropertyNamePoleVectorBone         = "pv"
+	CastPropertyNamePoleBone               = "pb"
+	CastPropertyNameTargetRotation         = "tr"
 )
 
 type CastPropertyHeader struct {
