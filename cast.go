@@ -1271,6 +1271,80 @@ func NewCastNodeCurve() *CastNodeCurve {
 	return NewCastNode[CastNodeCurve]()
 }
 
+func (n *CastNodeCurve) NodeName() string {
+	values := getPropertyValues[string](&n.CastNode, CastPropertyNameNodeName)
+	if len(values) == 0 {
+		return ""
+	}
+	return values[0]
+}
+
+func (n *CastNodeCurve) SetNodeName(name string) {
+	createProperty(&n.CastNode, CastPropertyNameNodeName, CastPropertyString, name)
+}
+
+func (n *CastNodeCurve) KeyPropertyName() string {
+	values := getPropertyValues[string](&n.CastNode, CastPropertyNameKeyProperty)
+	if len(values) == 0 {
+		return ""
+	}
+	return values[0]
+}
+
+func (n *CastNodeCurve) SetKeyPropertyName(name string) {
+	createProperty(&n.CastNode, CastPropertyNameKeyProperty, CastPropertyString, name)
+}
+
+// TODO
+func (n *CastNodeCurve) KeyFrameBuffer() []uint32 {
+	return getPropertyValues[uint32](&n.CastNode, CastPropertyNameKeyFrameBuffer)
+}
+
+func (n *CastNodeCurve) SetKeyFrameBuffer(values []uint32) {
+	createProperty(&n.CastNode, CastPropertyNameKeyFrameBuffer, CastPropertyInteger32, values...)
+}
+
+// TODO
+func (n *CastNodeCurve) KeyValueBuffer() []uint32 {
+	return getPropertyValues[uint32](&n.CastNode, CastPropertyNameKeyValueBuffer)
+}
+
+func (n *CastNodeCurve) SetFloatKeyValueBuffer(values []float32) {
+	createProperty(&n.CastNode, CastPropertyNameKeyValueBuffer, CastPropertyFloat, values...)
+}
+
+func (n *CastNodeCurve) SetVec4KeyValueBuffer(values []Vec4) {
+	createProperty(&n.CastNode, CastPropertyNameKeyValueBuffer, CastPropertyVector4, values...)
+}
+
+func (n *CastNodeCurve) SetByteKeyValueBuffer(values []byte) {
+	createProperty(&n.CastNode, CastPropertyNameKeyValueBuffer, CastPropertyByte, values...)
+}
+
+func (n *CastNodeCurve) Mode() string {
+	values := getPropertyValues[string](&n.CastNode, CastPropertyNameMode)
+	if len(values) == 0 {
+		return ""
+	}
+	return values[0]
+}
+
+func (n *CastNodeCurve) SetMode(mode string) {
+	createProperty(&n.CastNode, CastPropertyNameMode, CastPropertyString, mode)
+}
+
+func (n *CastNodeCurve) AdditiveBlendWeight() float32 {
+	values := getPropertyValues[float32](&n.CastNode, CastPropertyNameAdditiveBlendWeight)
+	if len(values) == 0 {
+		return 1.0
+	}
+	return values[0]
+}
+
+func (n *CastNodeCurve) SetAdditiveBlendWeight(value float32) {
+	createProperty(&n.CastNode, CastPropertyNameAdditiveBlendWeight, CastPropertyFloat, value)
+}
+
 type CastNodeNotificationTrack struct{ CastNode }
 
 func NewCastNodeNotificationTrack() *CastNodeNotificationTrack {
@@ -1337,6 +1411,12 @@ const (
 	CastPropertyNamePath                   = "p"
 	CastPropertyNameFramerate              = "fr"
 	CastPropertyNameLoop                   = "lo"
+	CastPropertyNameNodeName               = "nn"
+	CastPropertyNameKeyProperty            = "kp"
+	CastPropertyNameKeyFrameBuffer         = "kb"
+	CastPropertyNameKeyValueBuffer         = "kv"
+	CastPropertyNameMode                   = "m"
+	CastPropertyNameAdditiveBlendWeight    = "ab"
 )
 
 type CastPropertyHeader struct {
