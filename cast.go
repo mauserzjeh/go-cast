@@ -1351,6 +1351,28 @@ func NewCastNodeNotificationTrack() *CastNodeNotificationTrack {
 	return NewCastNode[CastNodeNotificationTrack]()
 }
 
+func (n *CastNodeNotificationTrack) Name() string {
+	property, ok := n.GetProperty(CastPropertyNameName)
+	if !ok {
+		return ""
+	}
+
+	return property.Name()
+}
+
+func (n *CastNodeNotificationTrack) SetName(name string) {
+	createProperty(&n.CastNode, CastPropertyNameName, CastPropertyString, name)
+}
+
+// TODO
+func (n *CastNodeNotificationTrack) KeyFrameBuffer() []uint32 {
+	return getPropertyValues[uint32](&n.CastNode, CastPropertyNameKeyFrameBuffer)
+}
+
+func (n *CastNodeNotificationTrack) SetKeyFrameBuffer(values []uint32) {
+	createProperty(&n.CastNode, CastPropertyNameKeyFrameBuffer, CastPropertyInteger32, values...)
+}
+
 type CastNodeInstance struct{ CastNode }
 
 func NewCastNodeInstance() *CastNodeInstance {
