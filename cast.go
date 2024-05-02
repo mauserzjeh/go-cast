@@ -910,12 +910,12 @@ func (n *CastNodeIKHandle) PoleBone() *CastNodeBone {
 		return nil
 	}
 
-	polePone, ok := pb.(*CastNodeBone)
+	poleBone, ok := pb.(*CastNodeBone)
 	if !ok {
 		return nil
 	}
 
-	return polePone
+	return poleBone
 }
 
 func (n *CastNodeIKHandle) SetPoleBone(hash uint64) {
@@ -943,6 +943,154 @@ type CastNodeConstraint struct{ CastNode }
 
 func NewCastNodeConstraint() *CastNodeConstraint {
 	return NewCastNode[CastNodeConstraint]()
+}
+
+func (n *CastNodeConstraint) Name() string {
+	property, ok := n.GetProperty(CastPropertyNameName)
+	if !ok {
+		return ""
+	}
+
+	return property.Name()
+}
+
+func (n *CastNodeConstraint) SetName(name string) {
+	createProperty(&n.CastNode, CastPropertyNameName, CastPropertyString, name)
+}
+
+func (n *CastNodeConstraint) ConstraintType() string {
+	values := getPropertyValues[string](&n.CastNode, CastPropertyNameConstraintType)
+	if len(values) == 0 {
+		return ""
+	}
+
+	return values[0]
+}
+
+func (n *CastNodeConstraint) SetConstraintType(constraintType string) {
+	createProperty(&n.CastNode, CastPropertyNameConstraintType, CastPropertyString, constraintType)
+}
+
+func (n *CastNodeConstraint) ConstraintBone() *CastNodeBone {
+	values := getPropertyValues[uint64](&n.CastNode, CastPropertyNameConstraintBone)
+	if len(values) == 0 {
+		return nil
+	}
+
+	if n.ParentNode == nil {
+		return nil
+	}
+
+	cb := n.ParentNode.ChildByHash(values[0])
+	if cb == nil {
+		return nil
+	}
+
+	constraintBone, ok := cb.(*CastNodeBone)
+	if !ok {
+		return nil
+	}
+
+	return constraintBone
+}
+
+func (n *CastNodeConstraint) SetConstraintBone(hash uint64) {
+	createProperty(&n.CastNode, CastPropertyNameConstraintBone, CastPropertyInteger64, hash)
+}
+
+func (n *CastNodeConstraint) TargetBone() *CastNodeBone {
+	values := getPropertyValues[uint64](&n.CastNode, CastPropertyNameTargetBone)
+	if len(values) == 0 {
+		return nil
+	}
+
+	if n.ParentNode == nil {
+		return nil
+	}
+
+	tb := n.ParentNode.ChildByHash(values[0])
+	if tb == nil {
+		return nil
+	}
+
+	targetBone, ok := tb.(*CastNodeBone)
+	if !ok {
+		return nil
+	}
+
+	return targetBone
+}
+
+func (n *CastNodeConstraint) SetTargetBone(hash uint64) {
+	createProperty(&n.CastNode, CastPropertyNameTargetBone, CastPropertyInteger64, hash)
+}
+
+func (n *CastNodeConstraint) MaintainOffset() bool {
+	values := getPropertyValues[byte](&n.CastNode, CastPropertyNameMaintainOffset)
+	if len(values) == 0 {
+		return false
+	}
+
+	return values[0] >= 1
+}
+
+func (n *CastNodeConstraint) SetMaintainOffset(enabled bool) {
+	value := byte(0)
+	if enabled {
+		value = byte(1)
+	}
+	createProperty(&n.CastNode, CastPropertyNameMaintainOffset, CastPropertyByte, value)
+}
+
+func (n *CastNodeConstraint) SkipX() bool {
+	values := getPropertyValues[byte](&n.CastNode, CastPropertyNameSkipX)
+	if len(values) == 0 {
+		return false
+	}
+
+	return values[0] >= 1
+}
+
+func (n *CastNodeConstraint) SetSkipX(enabled bool) {
+	value := byte(0)
+	if enabled {
+		value = byte(1)
+	}
+	createProperty(&n.CastNode, CastPropertyNameSkipX, CastPropertyByte, value)
+}
+
+func (n *CastNodeConstraint) SkipY() bool {
+	values := getPropertyValues[byte](&n.CastNode, CastPropertyNameSkipY)
+	if len(values) == 0 {
+		return false
+	}
+
+	return values[0] >= 1
+}
+
+func (n *CastNodeConstraint) SetSkipY(enabled bool) {
+	value := byte(0)
+	if enabled {
+		value = byte(1)
+	}
+	createProperty(&n.CastNode, CastPropertyNameSkipY, CastPropertyByte, value)
+}
+
+func (n *CastNodeConstraint) SkipZ() bool {
+	values := getPropertyValues[byte](&n.CastNode, CastPropertyNameSkipZ)
+	if len(values) == 0 {
+		return false
+	}
+
+	return values[0] >= 1
+}
+
+func (n *CastNodeConstraint) SetSkipZ(enabled bool) {
+	value := byte(0)
+	if enabled {
+		value = byte(1)
+	}
+	createProperty(&n.CastNode, CastPropertyNameSkipZ, CastPropertyByte, value)
 }
 
 type CastNodeMaterial struct{ CastNode }
@@ -1025,6 +1173,12 @@ const (
 	CastPropertyNamePoleVectorBone         = "pv"
 	CastPropertyNamePoleBone               = "pb"
 	CastPropertyNameTargetRotation         = "tr"
+	CastPropertyNameConstraintType         = "ct"
+	CastPropertyNameConstraintBone         = "cb"
+	CastPropertyNameMaintainOffset         = "mo"
+	CastPropertyNameSkipX                  = "sx"
+	CastPropertyNameSkipY                  = "sy"
+	CastPropertyNameSkipZ                  = "sz"
 )
 
 type CastPropertyHeader struct {
