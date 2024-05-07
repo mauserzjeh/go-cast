@@ -72,34 +72,43 @@ typedef struct {
     switch (header.Identifier) {
        case PROPERTY_ID_BYTE:
             SetBackColor(cLtAqua);
-            byte values[header.ArrayLength]   <optimize=false>; break;
+            byte values[header.ArrayLength] <optimize=false>; break;
+
        case PROPERTY_ID_SHORT:
             SetBackColor(cLtPurple);
             ushort values[header.ArrayLength] <optimize=false>; break;
+
        case PROPERTY_ID_INTEGER32:
             SetBackColor(cLtGreen);
-            uint values[header.ArrayLength]   <optimize=false>; break;
+            uint values[header.ArrayLength] <optimize=false>; break;
+
        case PROPERTY_ID_INTEGER64:
             SetBackColor(cLtRed);
             uint64 values[header.ArrayLength] <optimize=false>; break;
+
        case PROPERTY_ID_FLOAT:
             SetBackColor(cSilver);
-            float values[header.ArrayLength]  <optimize=false>; break;
+            float values[header.ArrayLength] <optimize=false>; break;
+
        case PROPERTY_ID_DOUBLE:
             SetBackColor(cPurple);
             double values[header.ArrayLength] <optimize=false>; break;
+
        case PROPERTY_ID_STRING:
             SetBackColor(cGreen);
-            string values <optimize=false>; break;
+            string values; break;
+
        case PROPERTY_ID_VEC2:
             SetBackColor(cRed);
-            Vec2 values[header.ArrayLength]   <optimize=false>; break;
+            Vec2 values[header.ArrayLength] <optimize=false>; break;
+
        case PROPERTY_ID_VEC3:
             SetBackColor(cAqua);
-            Vec3 values[header.ArrayLength]   <optimize=false>; break;
+            Vec3 values[header.ArrayLength] <optimize=false>; break;
+
        case PROPERTY_ID_VEC4:
             SetBackColor(cBlue);
-            Vec4 values[header.ArrayLength]   <optimize=false>; break;
+            Vec4 values[header.ArrayLength] <optimize=false>; break;
     }
 } CastProperty ;
 
@@ -107,8 +116,8 @@ struct CastNode;
 
 typedef struct {
     CastNodeHeader header;
-    CastProperty properties[header.PropertyCount] <optimize=false>;
-    CastNode childNodes[header.ChildCount] <optimize=false>;
+    CastProperty   properties[header.PropertyCount] <optimize=false>;
+    CastNode       childNodes[header.ChildCount]    <optimize=false>;
 } CastNode;
 
 typedef struct {
