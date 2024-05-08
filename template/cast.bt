@@ -110,7 +110,7 @@ typedef struct {
             SetBackColor(cBlue);
             Vec4 values[header.ArrayLength] <optimize=false>; break;
     }
-} CastProperty ;
+} CastProperty;
 
 struct CastNode;
 
