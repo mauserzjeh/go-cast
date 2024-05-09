@@ -119,7 +119,7 @@ type castHeader struct {
 	Flags     uint32
 }
 
-// CastId tyoe alias
+// CastId type alias
 type CastId uint32
 
 const (
@@ -165,7 +165,7 @@ type iCastNode interface {
 type castNode struct {
 	id         CastId
 	nodeHash   uint64
-	properties map[string]iCastProperty
+	properties map[CastPropertyName]iCastProperty
 	childNodes []iCastNode
 	parentNode iCastNode
 }
@@ -218,7 +218,7 @@ func NewCastNode[T CastNodes]() *T {
 		castNode: castNode{
 			id:         id,
 			nodeHash:   nextHash(),
-			properties: map[string]iCastProperty{},
+			properties: map[CastPropertyName]iCastProperty{},
 			childNodes: []iCastNode{},
 			parentNode: nil,
 		},
@@ -243,7 +243,7 @@ func (n *castNode) Load(r io.Reader) error {
 	}
 
 	if n.properties == nil {
-		n.properties = make(map[string]iCastProperty)
+		n.properties = make(map[CastPropertyName]iCastProperty)
 	}
 
 	for range header.PropertyCount {
@@ -324,20 +324,20 @@ func (n *castNode) Lenght() int {
 }
 
 // GetProperty returns the property with the given name
-func (n *castNode) GetProperty(name string) (iCastProperty, bool) {
+func (n *castNode) GetProperty(name CastPropertyName) (iCastProperty, bool) {
 	property, ok := n.properties[name]
 	return property, ok
 }
 
 // CreateProperty creates a new property with the given name and type
-func (n *castNode) CreateProperty(name string, id CastPropertyId) (iCastProperty, error) {
+func (n *castNode) CreateProperty(name CastPropertyName, id CastPropertyId) (iCastProperty, error) {
 	property, err := newCastProperty(id, name, 0)
 	if err != nil {
 		return nil, err
 	}
 
 	if n.properties == nil {
-		n.properties = make(map[string]iCastProperty)
+		n.properties = make(map[CastPropertyName]iCastProperty)
 	}
 
 	n.properties[name] = property
@@ -379,7 +379,7 @@ func (n *castNode) CreateChild(child iCastNode) iCastNode {
 }
 
 // GetProperties returns the properties
-func (n *castNode) GetProperties() map[string]iCastProperty {
+func (n *castNode) GetProperties() map[CastPropertyName]iCastProperty {
 	return n.properties
 }
 
@@ -591,12 +591,12 @@ func (n *CastNodeMesh) SetVertexColorBuffer(values []uint32) {
 
 // VertexUVLayerBuffer returns the vertex UV layer buffer for the given index
 func (n *CastNodeMesh) VertexUVLayerBuffer(index int) []Vec2 {
-	return getPropertyValues[Vec2](&n.castNode, fmt.Sprintf(CastPropertyNameVertexUVBuffer, index))
+	return getPropertyValues[Vec2](&n.castNode, CastPropertyName(fmt.Sprintf(string(CastPropertyNameVertexUVBuffer), index)))
 }
 
 // SetVertexUVLayerBuffer sets the UV layer buffer for the given index
 func (n *CastNodeMesh) SetVertexUVLayerBuffer(index int, values []Vec2) {
-	createProperty(&n.castNode, fmt.Sprintf(CastPropertyNameVertexUVBuffer, index), CastPropertyVector2, values...)
+	createProperty(&n.castNode, CastPropertyName(fmt.Sprintf(string(CastPropertyNameVertexUVBuffer), index)), CastPropertyVector2, values...)
 }
 
 // VertexWeightBoneBuffer returns the vertex weight bone buffer
@@ -1075,8 +1075,8 @@ func (n *CastNodeMaterial) SetType(materialType string) {
 }
 
 // Slots returns the material slot files
-func (n *CastNodeMaterial) Slots() map[string]*CastNodeFile {
-	slots := make(map[string]*CastNodeFile, 0)
+func (n *CastNodeMaterial) Slots() map[CastPropertyName]*CastNodeFile {
+	slots := make(map[CastPropertyName]*CastNodeFile, 0)
 	for slot, property := range n.properties {
 		if slot != CastPropertyNameName && slot != CastPropertyNameType {
 			p, ok := property.(*castProperty[uint64])
@@ -1386,54 +1386,56 @@ const (
 	CastPropertyVector4   CastPropertyId = 0x7634
 )
 
+type CastPropertyName string
+
 const (
-	CastPropertyNameName                   = "n"
-	CastPropertyNameVertexPositionBuffer   = "vp"
-	CastPropertyNameVertexNormalBuffer     = "vn"
-	CastPropertyNameVertexTangentBuffer    = "vt"
-	CastPropertyNameVertexColorBuffer      = "vc"
-	CastPropertyNameVertexUVBuffer         = "u%d"
-	CastPropertyNameVertexWeightBoneBuffer = "wv"
-	CastPropertyNameFaceBuffer             = "f"
-	CastPropertyNameUVLayerCount           = "ul"
-	CastPropertyNameMaximumWeightInfluence = "mi"
-	CastPropertyNameSkinningMethod         = "sm"
-	CastPropertyNameMaterial               = "m"
-	CastPropertyNameBaseShape              = "b"
-	CastPropertyNameTargetShape            = "t"
-	CastPropertyNameTargetWeightScale      = "ts"
-	CastPropertyNameParentIndex            = "p"
-	CastPropertyNameSegmentScaleCompensate = "ssc"
-	CastPropertyNameLocalPosition          = "lp"
-	CastPropertyNameLocalRotation          = "lr"
-	CastPropertyNameWorldPosition          = "wp"
-	CastPropertyNameWorldRotation          = "wr"
-	CastPropertyNameScale                  = "s"
-	CastPropertyNameStartBone              = "sb"
-	CastPropertyNameEndBone                = "eb"
-	CastPropertyNameTargetBone             = "tb"
-	CastPropertyNamePoleVectorBone         = "pv"
-	CastPropertyNamePoleBone               = "pb"
-	CastPropertyNameTargetRotation         = "tr"
-	CastPropertyNameConstraintType         = "ct"
-	CastPropertyNameConstraintBone         = "cb"
-	CastPropertyNameMaintainOffset         = "mo"
-	CastPropertyNameSkipX                  = "sx"
-	CastPropertyNameSkipY                  = "sy"
-	CastPropertyNameSkipZ                  = "sz"
-	CastPropertyNameType                   = "t"
-	CastPropertyNamePath                   = "p"
-	CastPropertyNameFramerate              = "fr"
-	CastPropertyNameLoop                   = "lo"
-	CastPropertyNameNodeName               = "nn"
-	CastPropertyNameKeyProperty            = "kp"
-	CastPropertyNameKeyFrameBuffer         = "kb"
-	CastPropertyNameKeyValueBuffer         = "kv"
-	CastPropertyNameMode                   = "m"
-	CastPropertyNameAdditiveBlendWeight    = "ab"
-	CastPropertyNameReferenceFile          = "rf"
-	CastPropertyNamePosition               = "p"
-	CastPropertyNameRotation               = "r"
+	CastPropertyNameName                   CastPropertyName = "n"
+	CastPropertyNameVertexPositionBuffer   CastPropertyName = "vp"
+	CastPropertyNameVertexNormalBuffer     CastPropertyName = "vn"
+	CastPropertyNameVertexTangentBuffer    CastPropertyName = "vt"
+	CastPropertyNameVertexColorBuffer      CastPropertyName = "vc"
+	CastPropertyNameVertexUVBuffer         CastPropertyName = "u%d"
+	CastPropertyNameVertexWeightBoneBuffer CastPropertyName = "wv"
+	CastPropertyNameFaceBuffer             CastPropertyName = "f"
+	CastPropertyNameUVLayerCount           CastPropertyName = "ul"
+	CastPropertyNameMaximumWeightInfluence CastPropertyName = "mi"
+	CastPropertyNameSkinningMethod         CastPropertyName = "sm"
+	CastPropertyNameMaterial               CastPropertyName = "m"
+	CastPropertyNameBaseShape              CastPropertyName = "b"
+	CastPropertyNameTargetShape            CastPropertyName = "t"
+	CastPropertyNameTargetWeightScale      CastPropertyName = "ts"
+	CastPropertyNameParentIndex            CastPropertyName = "p"
+	CastPropertyNameSegmentScaleCompensate CastPropertyName = "ssc"
+	CastPropertyNameLocalPosition          CastPropertyName = "lp"
+	CastPropertyNameLocalRotation          CastPropertyName = "lr"
+	CastPropertyNameWorldPosition          CastPropertyName = "wp"
+	CastPropertyNameWorldRotation          CastPropertyName = "wr"
+	CastPropertyNameScale                  CastPropertyName = "s"
+	CastPropertyNameStartBone              CastPropertyName = "sb"
+	CastPropertyNameEndBone                CastPropertyName = "eb"
+	CastPropertyNameTargetBone             CastPropertyName = "tb"
+	CastPropertyNamePoleVectorBone         CastPropertyName = "pv"
+	CastPropertyNamePoleBone               CastPropertyName = "pb"
+	CastPropertyNameTargetRotation         CastPropertyName = "tr"
+	CastPropertyNameConstraintType         CastPropertyName = "ct"
+	CastPropertyNameConstraintBone         CastPropertyName = "cb"
+	CastPropertyNameMaintainOffset         CastPropertyName = "mo"
+	CastPropertyNameSkipX                  CastPropertyName = "sx"
+	CastPropertyNameSkipY                  CastPropertyName = "sy"
+	CastPropertyNameSkipZ                  CastPropertyName = "sz"
+	CastPropertyNameType                   CastPropertyName = "t"
+	CastPropertyNamePath                   CastPropertyName = "p"
+	CastPropertyNameFramerate              CastPropertyName = "fr"
+	CastPropertyNameLoop                   CastPropertyName = "lo"
+	CastPropertyNameNodeName               CastPropertyName = "nn"
+	CastPropertyNameKeyProperty            CastPropertyName = "kp"
+	CastPropertyNameKeyFrameBuffer         CastPropertyName = "kb"
+	CastPropertyNameKeyValueBuffer         CastPropertyName = "kv"
+	CastPropertyNameMode                   CastPropertyName = "m"
+	CastPropertyNameAdditiveBlendWeight    CastPropertyName = "ab"
+	CastPropertyNameReferenceFile          CastPropertyName = "rf"
+	CastPropertyNamePosition               CastPropertyName = "p"
+	CastPropertyNameRotation               CastPropertyName = "r"
 )
 
 // castPropertyHeader holds header data of the property
@@ -1445,7 +1447,7 @@ type castPropertyHeader struct {
 
 // iCastProperty is the property interface
 type iCastProperty interface {
-	Name() string
+	Name() CastPropertyName
 	Identifier() CastPropertyId
 	Load(r io.Reader) error
 	Length() int
@@ -1465,7 +1467,7 @@ func loadCastProperty(r io.Reader) (iCastProperty, error) {
 		return nil, err
 	}
 
-	property, err := newCastProperty(header.Identifier, string(name), header.ArrayLength)
+	property, err := newCastProperty(header.Identifier, CastPropertyName(name), header.ArrayLength)
 	if err != nil {
 		return nil, err
 	}
@@ -1478,7 +1480,7 @@ func loadCastProperty(r io.Reader) (iCastProperty, error) {
 }
 
 // newCastProperty creates a new property with the given type, name and size
-func newCastProperty(id CastPropertyId, name string, size uint32) (iCastProperty, error) {
+func newCastProperty(id CastPropertyId, name CastPropertyName, size uint32) (iCastProperty, error) {
 	switch id {
 	case CastPropertyByte:
 		return &castProperty[byte]{
@@ -1553,12 +1555,12 @@ type CastPropertyValueType interface {
 // castProperty holds data of a property
 type castProperty[T CastPropertyValueType] struct {
 	id     CastPropertyId
-	name   string
+	name   CastPropertyName
 	values []T
 }
 
 // Name returns the name
-func (p *castProperty[T]) Name() string {
+func (p *castProperty[T]) Name() CastPropertyName {
 	return p.name
 }
 
@@ -1679,14 +1681,14 @@ func nextHash() uint64 {
 }
 
 // createProperty creates a new property on the given node
-func createProperty[T CastPropertyValueType](node *castNode, name string, id CastPropertyId, values ...T) {
+func createProperty[T CastPropertyValueType](node *castNode, name CastPropertyName, id CastPropertyId, values ...T) {
 	property, _ := node.CreateProperty(name, id)
 	p := property.(*castProperty[T])
 	p.values = append(p.values, values...)
 }
 
 // getPropertyValues returns the property values of the given node
-func getPropertyValues[T CastPropertyValueType](node *castNode, name string) []T {
+func getPropertyValues[T CastPropertyValueType](node *castNode, name CastPropertyName) []T {
 	// TODO
 
 	property, ok := node.GetProperty(name)
@@ -1703,7 +1705,7 @@ func getPropertyValues[T CastPropertyValueType](node *castNode, name string) []T
 }
 
 // getPropertyValue returns a property value of the given node
-func getPropertyValue[T CastPropertyValueType](node *castNode, name string) T {
+func getPropertyValue[T CastPropertyValueType](node *castNode, name CastPropertyName) T {
 	values := getPropertyValues[T](node, name)
 	if len(values) == 0 {
 		return *new(T)
@@ -1744,7 +1746,7 @@ func getChildrenOfType[T CastNodes](node *castNode, id CastId) []*T {
 }
 
 // getChildByHash returns a childnode of the given node by hash
-func getChildByHash[T CastNodes](node iCastNode, name string, useParent bool) *T {
+func getChildByHash[T CastNodes](node iCastNode, name CastPropertyName, useParent bool) *T {
 	values := getPropertyValues[uint64](node.GetCastNode(), name)
 	if len(values) == 0 {
 		return nil
