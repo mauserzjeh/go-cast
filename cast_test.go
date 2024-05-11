@@ -94,7 +94,7 @@ func TestCastFile(t *testing.T) {
 	assertEqual(t, prop.Name(), PropNameName)
 	assertEqual(t, prop.Count(), 0)
 
-	p, ok := prop.(*castProperty[string])
+	p, ok := prop.(*CastProperty[string])
 	if !ok {
 		t.FailNow()
 	}

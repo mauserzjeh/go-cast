@@ -29,24 +29,24 @@ type castHeader struct {
 	Flags     uint32
 }
 
-// castFile holds data of a cast file
-type castFile struct {
+// CastFile holds data of a cast file
+type CastFile struct {
 	flags     uint32
 	version   uint32
-	rootNodes []*castNode
+	rootNodes []*CastNode
 }
 
-// New creates a new [castFile]
-func New() *castFile {
-	return &castFile{
+// New creates a new [CastFile]
+func New() *CastFile {
+	return &CastFile{
 		flags:     0,
 		version:   0x1,
-		rootNodes: make([]*castNode, 0),
+		rootNodes: make([]*CastNode, 0),
 	}
 }
 
 // Load loads a [castFile] from the given [io.Reader]
-func Load(r io.Reader) (*castFile, error) {
+func Load(r io.Reader) (*CastFile, error) {
 	var header castHeader
 	if err := binary.Read(r, binary.LittleEndian, &header); err != nil {
 		return nil, err
@@ -56,14 +56,14 @@ func Load(r io.Reader) (*castFile, error) {
 		return nil, fmt.Errorf("invalid cast file magic: %#x", header.Magic)
 	}
 
-	castFile := &castFile{
+	castFile := &CastFile{
 		flags:     header.Flags,
 		version:   header.Version,
-		rootNodes: make([]*castNode, header.RootNodes),
+		rootNodes: make([]*CastNode, header.RootNodes),
 	}
 
 	for i := range castFile.rootNodes {
-		castFile.rootNodes[i] = &castNode{}
+		castFile.rootNodes[i] = &CastNode{}
 		if err := castFile.rootNodes[i].load(r); err != nil {
 			return nil, err
 		}
@@ -72,41 +72,41 @@ func Load(r io.Reader) (*castFile, error) {
 }
 
 // Flags returns the flags
-func (n *castFile) Flags() uint32 {
+func (n *CastFile) Flags() uint32 {
 	return n.flags
 }
 
 // SetFlags sets the flags
-func (n *castFile) SetFlags(flags uint32) *castFile {
+func (n *CastFile) SetFlags(flags uint32) *CastFile {
 	n.flags = flags
 	return n
 }
 
 // Version returns the version
-func (n *castFile) Version() uint32 {
+func (n *CastFile) Version() uint32 {
 	return n.version
 }
 
 // SetVersion sets the version
-func (n *castFile) SetVersion(version uint32) *castFile {
+func (n *CastFile) SetVersion(version uint32) *CastFile {
 	n.version = version
 	return n
 }
 
 // Roots returns the root nodes
-func (n *castFile) Roots() []*castNode {
+func (n *CastFile) Roots() []*CastNode {
 	return n.rootNodes
 }
 
 // CreateRoot creates a root node
-func (n *castFile) CreateRoot() *castNode {
+func (n *CastFile) CreateRoot() *CastNode {
 	root := newCastNode(NodeIdRoot)
 	n.rootNodes = append(n.rootNodes, root)
 	return root
 }
 
 // Write writes the file to the given [io.Writer]
-func (n *castFile) Write(w io.Writer) error {
+func (n *CastFile) Write(w io.Writer) error {
 	if err := binary.Write(w, binary.LittleEndian, castHeader{
 		Magic:     castMagic,
 		Version:   n.version,
@@ -158,47 +158,47 @@ type castNodeHeader struct {
 	ChildCount    uint32
 }
 
-// castNode holds data of a node
-type castNode struct {
+// CastNode holds data of a node
+type CastNode struct {
 	id         CastNodeId
 	hash       uint64
 	properties map[CastPropertyName]iCastProperty
-	childNodes []*castNode
-	parentNode *castNode
+	childNodes []*CastNode
+	parentNode *CastNode
 }
 
-func newCastNode(id CastNodeId) *castNode {
-	return &castNode{
+func newCastNode(id CastNodeId) *CastNode {
+	return &CastNode{
 		id:         id,
 		hash:       nextHash(),
 		properties: map[CastPropertyName]iCastProperty{},
-		childNodes: []*castNode{},
+		childNodes: []*CastNode{},
 		parentNode: nil,
 	}
 }
 
 // Id returns the id
-func (n *castNode) Id() CastNodeId {
+func (n *CastNode) Id() CastNodeId {
 	return n.id
 }
 
 // Hash returns the hash
-func (n *castNode) Hash() uint64 {
+func (n *CastNode) Hash() uint64 {
 	return n.hash
 }
 
 // setParentNode sets the parent node
-func (n *castNode) setParentNode(node *castNode) {
+func (n *CastNode) setParentNode(node *CastNode) {
 	n.parentNode = node
 }
 
 // GetParentNode returns the parent node
-func (n *castNode) GetParentNode() *castNode {
+func (n *CastNode) GetParentNode() *CastNode {
 	return n.parentNode
 }
 
 // len returns the size of the node
-func (n *castNode) len() int {
+func (n *CastNode) len() int {
 	l := 0x18
 
 	for _, p := range n.properties {
@@ -212,7 +212,7 @@ func (n *castNode) len() int {
 }
 
 // load loads a node from the given [io.Reader]
-func (n *castNode) load(r io.Reader) error {
+func (n *CastNode) load(r io.Reader) error {
 	var header castNodeHeader
 	if err := binary.Read(r, binary.LittleEndian, &header); err != nil {
 		return err
@@ -231,9 +231,9 @@ func (n *castNode) load(r io.Reader) error {
 		n.properties[property.Name()] = property
 	}
 
-	n.childNodes = make([]*castNode, header.ChildCount)
+	n.childNodes = make([]*CastNode, header.ChildCount)
 	for i := range n.childNodes {
-		n.childNodes[i] = &castNode{}
+		n.childNodes[i] = &CastNode{}
 		if err := n.childNodes[i].load(r); err != nil {
 			return err
 		}
@@ -244,7 +244,7 @@ func (n *castNode) load(r io.Reader) error {
 }
 
 // write writes the node to the given [io.Writer]
-func (n *castNode) write(w io.Writer) error {
+func (n *CastNode) write(w io.Writer) error {
 	if err := binary.Write(w, binary.LittleEndian, castNodeHeader{
 		Id:            n.id,
 		NodeSize:      uint32(n.len()),
@@ -271,18 +271,18 @@ func (n *castNode) write(w io.Writer) error {
 }
 
 // GetProperties returns the properties
-func (n *castNode) GetProperties() map[CastPropertyName]iCastProperty {
+func (n *CastNode) GetProperties() map[CastPropertyName]iCastProperty {
 	return n.properties
 }
 
 // GetProperty returns the property with the given name
-func (n *castNode) GetProperty(name CastPropertyName) (iCastProperty, bool) {
+func (n *CastNode) GetProperty(name CastPropertyName) (iCastProperty, bool) {
 	property, ok := n.properties[name]
 	return property, ok
 }
 
 // CreateProperty creates a new property with the given name and type
-func (n *castNode) CreateProperty(id CastPropertyId, name CastPropertyName) (iCastProperty, error) {
+func (n *CastNode) CreateProperty(id CastPropertyId, name CastPropertyName) (iCastProperty, error) {
 	property, err := newCastProperty(id, name, 0)
 	if err != nil {
 		return nil, err
@@ -297,13 +297,13 @@ func (n *castNode) CreateProperty(id CastPropertyId, name CastPropertyName) (iCa
 }
 
 // GetChildNodes returns the child nodes
-func (n *castNode) GetChildNodes() []*castNode {
+func (n *CastNode) GetChildNodes() []*CastNode {
 	return n.childNodes
 }
 
 // GetChildrenOfType returns childnodes with the given type
-func (n *castNode) GetChildrenOfType(id CastNodeId) []*castNode {
-	nodes := make([]*castNode, 0)
+func (n *CastNode) GetChildrenOfType(id CastNodeId) []*CastNode {
+	nodes := make([]*CastNode, 0)
 	for _, c := range n.childNodes {
 		if c.Id() == id {
 			nodes = append(nodes, c)
@@ -314,7 +314,7 @@ func (n *castNode) GetChildrenOfType(id CastNodeId) []*castNode {
 }
 
 // GetChildByHash returns a childnode with the given hash
-func (n *castNode) GetChildByHash(hash uint64) *castNode {
+func (n *CastNode) GetChildByHash(hash uint64) *CastNode {
 	for _, c := range n.childNodes {
 		if c.Hash() == hash {
 			return c
@@ -325,7 +325,7 @@ func (n *castNode) GetChildByHash(hash uint64) *castNode {
 }
 
 // CreateChild creates a new childnode
-func (n *castNode) CreateChild(id CastNodeId) *castNode {
+func (n *CastNode) CreateChild(id CastNodeId) *CastNode {
 	child := newCastNode(id)
 	child.setParentNode(n)
 	n.childNodes = append(n.childNodes, child)
@@ -427,40 +427,40 @@ type CastPropertyValueType interface {
 	byte | uint16 | uint32 | uint64 | float32 | float64 | string | Vec2 | Vec3 | Vec4
 }
 
-// castProperty holds data of a property
-type castProperty[T CastPropertyValueType] struct {
+// CastProperty holds data of a property
+type CastProperty[T CastPropertyValueType] struct {
 	id     CastPropertyId
 	name   CastPropertyName
 	values []T
 }
 
 // Id returns the property id
-func (p *castProperty[T]) Id() CastPropertyId {
+func (p *CastProperty[T]) Id() CastPropertyId {
 	return p.id
 }
 
 // Name returns the name
-func (p *castProperty[T]) Name() CastPropertyName {
+func (p *CastProperty[T]) Name() CastPropertyName {
 	return p.name
 }
 
 // Count returns the amount of values held by the property
-func (p *castProperty[T]) Count() int {
+func (p *CastProperty[T]) Count() int {
 	return len(p.values)
 }
 
 // GetValues returns the values held by the property
-func (p *castProperty[T]) GetValues() []T {
+func (p *CastProperty[T]) GetValues() []T {
 	return p.values
 }
 
 // AddValues adds values to the property's values
-func (p *castProperty[T]) AddValues(values ...T) {
+func (p *CastProperty[T]) AddValues(values ...T) {
 	p.values = append(p.values, values...)
 }
 
 // Length returns the length of the property
-func (p *castProperty[T]) len() int {
+func (p *CastProperty[T]) len() int {
 	l := 0x8
 
 	l += len(p.name)
@@ -475,7 +475,7 @@ func (p *castProperty[T]) len() int {
 }
 
 // load loads a property from the given [io.Reader]
-func (p *castProperty[T]) load(r io.Reader) error {
+func (p *CastProperty[T]) load(r io.Reader) error {
 	switch any(p.values).(type) {
 	case []string:
 		str, err := readString(r)
@@ -491,7 +491,7 @@ func (p *castProperty[T]) load(r io.Reader) error {
 }
 
 // write writes a property to the given [io.Writer]
-func (p *castProperty[T]) write(w io.Writer) error {
+func (p *CastProperty[T]) write(w io.Writer) error {
 	if err := binary.Write(w, binary.LittleEndian, castPropertyHeader{
 		Id:          p.id,
 		NameSize:    uint16(len(p.name)),
@@ -523,62 +523,62 @@ func (p *castProperty[T]) write(w io.Writer) error {
 func newCastProperty(id CastPropertyId, name CastPropertyName, size uint32) (iCastProperty, error) {
 	switch id {
 	case PropByte:
-		return &castProperty[byte]{
+		return &CastProperty[byte]{
 			id:     id,
 			name:   name,
 			values: make([]byte, size),
 		}, nil
 	case PropShort:
-		return &castProperty[uint16]{
+		return &CastProperty[uint16]{
 			id:     id,
 			name:   name,
 			values: make([]uint16, size),
 		}, nil
 	case PropInteger32:
-		return &castProperty[uint32]{
+		return &CastProperty[uint32]{
 			id:     id,
 			name:   name,
 			values: make([]uint32, size),
 		}, nil
 	case PropInteger64:
-		return &castProperty[uint64]{
+		return &CastProperty[uint64]{
 			id:     id,
 			name:   name,
 			values: make([]uint64, size),
 		}, nil
 	case PropFloat:
-		return &castProperty[float32]{
+		return &CastProperty[float32]{
 			id:     id,
 			name:   name,
 			values: make([]float32, size),
 		}, nil
 	case PropDouble:
-		return &castProperty[float64]{
+		return &CastProperty[float64]{
 			id:     id,
 			name:   name,
 			values: make([]float64, size),
 		}, nil
 	case PropString:
-		return &castProperty[string]{
+		return &CastProperty[string]{
 			id:     id,
 			name:   name,
 			values: make([]string, size),
 		}, nil
 	case PropVector2:
-		return &castProperty[Vec2]{
+		return &CastProperty[Vec2]{
 			id:     id,
 			name:   name,
 			values: make([]Vec2, size),
 		}, nil
 	case PropVector3:
-		return &castProperty[Vec3]{
+		return &CastProperty[Vec3]{
 			id:     id,
 			name:   name,
 			values: make([]Vec3, size),
 		}, nil
 
 	case PropVector4:
-		return &castProperty[Vec4]{
+		return &CastProperty[Vec4]{
 			id:     id,
 			name:   name,
 			values: make([]Vec4, size),
@@ -613,33 +613,33 @@ func loadCastProperty(r io.Reader) (iCastProperty, error) {
 }
 
 // CreateProperty creates a new property on the given node with the given values
-func CreateProperty[T CastPropertyValueType](node *castNode, name CastPropertyName, id CastPropertyId, values ...T) (*castProperty[T], error) {
+func CreateProperty[T CastPropertyValueType](node *CastNode, name CastPropertyName, id CastPropertyId, values ...T) (*CastProperty[T], error) {
 	property, err := node.CreateProperty(id, name)
 	if err != nil {
 		return nil, err
 	}
-	p := property.(*castProperty[T])
+	p := property.(*CastProperty[T])
 	p.values = append(p.values, values...)
 	return p, nil
 }
 
 // GetPropertyValues returns the property values of the given node
-func GetPropertyValues[T CastPropertyValueType](node *castNode, name CastPropertyName) ([]T, error) {
+func GetPropertyValues[T CastPropertyValueType](node *CastNode, name CastPropertyName) ([]T, error) {
 	property, ok := node.GetProperty(name)
 	if !ok {
 		return nil, fmt.Errorf(`cast: property %s not found`, name)
 	}
 
-	p, ok := property.(*castProperty[T])
+	p, ok := property.(*CastProperty[T])
 	if !ok {
-		return nil, fmt.Errorf("cast: property has a type of %T instead of %T", property, &castProperty[T]{})
+		return nil, fmt.Errorf("cast: property has a type of %T instead of %T", property, &CastProperty[T]{})
 	}
 
 	return p.values, nil
 }
 
 // GetPropertyValue returns a pointer to the first property value of the given node
-func GetPropertyValue[T CastPropertyValueType](node *castNode, name CastPropertyName) (*T, error) {
+func GetPropertyValue[T CastPropertyValueType](node *CastNode, name CastPropertyName) (*T, error) {
 	values, err := GetPropertyValues[T](node, name)
 	if err != nil {
 		return nil, err
