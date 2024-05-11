@@ -161,7 +161,7 @@ type castNodeHeader struct {
 // castNode holds data of a node
 type castNode struct {
 	id         CastNodeId
-	nodeHash   uint64
+	hash       uint64
 	properties map[CastPropertyName]iCastProperty
 	childNodes []*castNode
 	parentNode *castNode
@@ -170,7 +170,7 @@ type castNode struct {
 func newCastNode(id CastNodeId) *castNode {
 	return &castNode{
 		id:         id,
-		nodeHash:   nextHash(),
+		hash:       nextHash(),
 		properties: map[CastPropertyName]iCastProperty{},
 		childNodes: []*castNode{},
 		parentNode: nil,
@@ -184,11 +184,11 @@ func (n *castNode) Id() CastNodeId {
 
 // Hash returns the hash
 func (n *castNode) Hash() uint64 {
-	return n.nodeHash
+	return n.hash
 }
 
-// SetParentNode sets the parent node
-func (n *castNode) SetParentNode(node *castNode) {
+// setParentNode sets the parent node
+func (n *castNode) setParentNode(node *castNode) {
 	n.parentNode = node
 }
 
@@ -237,7 +237,7 @@ func (n *castNode) load(r io.Reader) error {
 		if err := n.childNodes[i].load(r); err != nil {
 			return err
 		}
-		n.childNodes[i].SetParentNode(n)
+		n.childNodes[i].setParentNode(n)
 	}
 
 	return nil
@@ -248,7 +248,7 @@ func (n *castNode) write(w io.Writer) error {
 	if err := binary.Write(w, binary.LittleEndian, castNodeHeader{
 		Id:            n.id,
 		NodeSize:      uint32(n.len()),
-		NodeHash:      n.nodeHash,
+		NodeHash:      n.hash,
 		PropertyCount: uint32(len(n.properties)),
 		ChildCount:    uint32(len(n.childNodes)),
 	}); err != nil {
@@ -327,7 +327,7 @@ func (n *castNode) GetChildByHash(hash uint64) *castNode {
 // CreateChild creates a new childnode
 func (n *castNode) CreateChild(id CastNodeId) *castNode {
 	child := newCastNode(id)
-	child.SetParentNode(n)
+	child.setParentNode(n)
 	n.childNodes = append(n.childNodes, child)
 	return child
 }
@@ -412,9 +412,9 @@ type castPropertyHeader struct {
 
 // iCastProperty is the property interface
 type iCastProperty interface {
-	Id() CastPropertyId
-	Name() CastPropertyName
-	ValueCount() int
+	Id() CastPropertyId     // Id returns the property id
+	Name() CastPropertyName // Name returns the property name
+	Count() int             // Count returns the amount of values held by the property
 	len() int
 	load(r io.Reader) error
 	write(w io.Writer) error
@@ -441,14 +441,19 @@ func (p *castProperty[T]) Name() CastPropertyName {
 	return p.name
 }
 
-// ValueCount returns the amount of values held by the property
-func (p *castProperty[T]) ValueCount() int {
+// Count returns the amount of values held by the property
+func (p *castProperty[T]) Count() int {
 	return len(p.values)
 }
 
-// Values returns the values held by the property
-func (p *castProperty[T]) Values() []T {
+// GetValues returns the values held by the property
+func (p *castProperty[T]) GetValues() []T {
 	return p.values
+}
+
+// AddValues adds values to the property's values
+func (p *castProperty[T]) AddValues(values ...T) {
+	p.values = append(p.values, values...)
 }
 
 // Length returns the length of the property
