@@ -336,6 +336,7 @@ func (n *castNode) CreateChild(id CastNodeId) *castNode {
 //       PROPERTIES        //
 // ----------------------- //
 
+// CastPropertyId type alias
 type CastPropertyId uint16
 
 const (
@@ -351,6 +352,7 @@ const (
 	PropVector4   CastPropertyId = 0x7634
 )
 
+// CastPropertyName type alias
 type CastPropertyName string
 
 const (
@@ -420,6 +422,7 @@ type iCastProperty interface {
 	write(w io.Writer) error
 }
 
+// CastPropertyValueType is the constraint for possible property types
 type CastPropertyValueType interface {
 	byte | uint16 | uint32 | uint64 | float32 | float64 | string | Vec2 | Vec3 | Vec4
 }
