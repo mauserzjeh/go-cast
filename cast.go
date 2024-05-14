@@ -454,7 +454,12 @@ func (p *CastProperty[T]) GetValues() []T {
 	return p.values
 }
 
-// AddValues adds values to the property's values
+// SetValues sets the values of the property
+func (p *CastProperty[T]) SetValues(values ...T) {
+	p.values = values
+}
+
+// AddValues adds values to the property
 func (p *CastProperty[T]) AddValues(values ...T) {
 	p.values = append(p.values, values...)
 }

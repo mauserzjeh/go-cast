@@ -104,6 +104,12 @@ func TestCastFile(t *testing.T) {
 	assertEqual(t, len(p.GetValues()), 1)
 	assertEqual(t, p.GetValues()[0], "foo")
 
+	p.SetValues("bar", "baz")
+	values := p.GetValues()
+	assertEqual(t, len(values), 2)
+	assertEqual(t, values[0], "bar")
+	assertEqual(t, values[1], "baz")
+
 	prop2, err := CreateProperty(mesh, PropNamePosition, PropVector3, Vec3{
 		X: 1,
 		Y: 2,
